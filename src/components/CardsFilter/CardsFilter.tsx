@@ -1,4 +1,5 @@
 import React, { useCallback } from "react";
+import debounce from "lodash/debounce";
 import { Colors } from "../../interfaces/cards";
 import { useStyles } from "./CardsFilter.styles";
 import {
@@ -7,6 +8,7 @@ import {
   FormControlLabel,
   Radio,
   Grid,
+  TextField,
 } from "../common";
 
 interface Props {
@@ -14,7 +16,12 @@ interface Props {
   isFetching: boolean;
   colorValues: Set<string>;
   radio: string;
-  onChange: (params: { colors: Set<string>; radio: string }) => void;
+  cardName: string;
+  onChange: (params: {
+    colors: Set<string>;
+    radio: string;
+    cardName: string;
+  }) => void;
 }
 
 export const CardsFilter: React.FC<Props> = ({
@@ -23,6 +30,7 @@ export const CardsFilter: React.FC<Props> = ({
   isFetching,
   colorValues,
   radio,
+  cardName,
 }: Props) => {
   const classes = useStyles();
   const handleOnChange = useCallback(
@@ -34,19 +42,25 @@ export const CardsFilter: React.FC<Props> = ({
       } else {
         copy.delete(name);
       }
-      onChange({ radio, colors: copy });
+      onChange({ radio, colors: copy, cardName });
     },
-    [onChange, radio, colorValues]
+    [onChange, radio, colorValues, cardName]
   );
 
   const handleOnRadioChange = useCallback(
     (event: React.ChangeEvent<{ value: string }>) => {
       const { value } = event.target;
-      onChange({ radio: value, colors: colorValues });
+      onChange({ radio: value, colors: colorValues, cardName });
     },
-    [onChange, colorValues]
+    [onChange, colorValues, cardName]
   );
-
+  const handleInputChange = useCallback(
+    (event: React.ChangeEvent<{ value: string }>) => {
+      const { value } = event.target;
+      onChange({ radio, colors: colorValues, cardName: value });
+    },
+    [onChange, colorValues, radio]
+  );
   return (
     <Grid
       className={classes.container}
@@ -56,6 +70,15 @@ export const CardsFilter: React.FC<Props> = ({
       alignItems="stretch"
       justify="center"
     >
+      <Grid item>
+        <TextField
+          name="name"
+          label="Name"
+          placeholder="Name"
+          onChange={debounce(handleInputChange, 500)}
+          disabled={isFetching}
+        />
+      </Grid>
       {colors.map((color) => (
         <Grid item key={color}>
           <CustomCheckBox

@@ -16,7 +16,7 @@ test("should store data", async () => {
     isFetching: false,
     isFailed: false,
     isSuccess: true,
-    data: responseMock.data,
+    data: { ...responseMock.data, headers: responseMock.headers },
     error: null,
   };
 

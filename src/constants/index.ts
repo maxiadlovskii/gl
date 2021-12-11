@@ -12,3 +12,5 @@ export const colorMap: {
 };
 
 export const cardPerPage = 12;
+
+export const colorsList = ["Red", "Blue", "Black", "White", "Green"];

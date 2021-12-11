@@ -2,61 +2,55 @@ import { render } from "@testing-library/react";
 import React from "react";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
-import { CardItem, CardsFilter } from "../components";
+import { CardItem, CardsFilter, CardDetails } from "../components";
 import { CardsList } from "../components/CarsList/CardsList";
 
-import { car, colors, manufacturers } from "./moks";
+import { card } from "./moks";
 import { routes } from "../constants/routes";
+import { colorsList } from "../constants";
 
 const history = createMemoryHistory();
 const route = routes.cardList;
 history.push(route);
 
-const {
-  manufacturerName,
-  modelName,
-  pictureUrl,
-  fuelType,
-  color: carColor,
-  stockNumber,
-  mileage,
-} = car;
-
-test("Render CarItem", () => {
+test("Render CardItem", () => {
   const { container } = render(
     <Router history={history}>
-      <CardItem
-        stockNumber={stockNumber}
-        mileage={mileage}
-        fuelType={fuelType}
-        color={carColor}
-        manufacturerName={manufacturerName}
-        modelName={modelName}
-        pictureUrl={pictureUrl}
-      />
+      <CardItem imageUrl={card.imageUrl} rarity={card.rarity} />
     </Router>
   );
   expect(container).toMatchSnapshot();
 });
 
-test("Render CarsFilter", () => {
+test("Render CardsFilter", () => {
   const { container } = render(
     <Router history={history}>
       <CardsFilter
-        colors={colors}
-        manufacturers={manufacturers}
+        colors={colorsList}
         onChange={() => null}
         isFetching={false}
+        radio="or"
+        cardName=""
+        colorValues={new Set(colorsList)}
       />
     </Router>
   );
   expect(container).toMatchSnapshot();
 });
 
-test("Render CarsList", () => {
+test("Render CardsList", () => {
   const { container } = render(
     <Router history={history}>
       <CardsList />
+    </Router>
+  );
+  expect(container).toMatchSnapshot();
+});
+
+test("Render CardDetails", () => {
+  const { container } = render(
+    <Router history={history}>
+      <CardDetails card={card} onClose={() => {}} />
     </Router>
   );
   expect(container).toMatchSnapshot();

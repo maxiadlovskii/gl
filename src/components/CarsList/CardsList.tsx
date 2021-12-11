@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Pagination, Dialog } from "../common";
 import { useFetch } from "../../hooks";
 import { getCarsData } from "../../api/cars";
@@ -6,9 +6,8 @@ import { CardItem, CardsFilter, CardDetails } from "..";
 import { Card } from "../../interfaces/cards";
 import { useStyles } from "./CardsList.styles";
 import { CardsListSkeleton } from "./CardsListSkeleton";
-import { cardPerPage } from "../../constants";
+import { cardPerPage, colorsList } from "../../constants";
 
-const colorsList = ["Red", "Blue", "Black", "White", "Green"];
 export const CardsList: React.FC = () => {
   const classes = useStyles();
   const [dialogIsOpen, setDialogIsOpen] = useState(false);
@@ -18,6 +17,7 @@ export const CardsList: React.FC = () => {
     new Set(colorsList)
   );
   const [radio, setRadio] = useState("or");
+  const [cardName, setCardName] = useState("");
 
   const [
     {
@@ -36,9 +36,18 @@ export const CardsList: React.FC = () => {
   );
 
   const handleFilterChange = useCallback(
-    ({ radio: newRadio, colors }: { colors: Set<string>; radio: string }) => {
+    ({
+      radio: newRadio,
+      colors,
+      cardName: newCardName,
+    }: {
+      colors: Set<string>;
+      radio: string;
+      cardName: string;
+    }) => {
       setRadio(newRadio);
       setColorValues(colors);
+      setCardName(newCardName);
       setCurrentPage(1);
       /*
       setCurrentPage(1);
@@ -47,7 +56,7 @@ export const CardsList: React.FC = () => {
       fetchData({ query: { colors: `${queryColor}`, pageSize: cardPerPage } });
       */
     },
-    [setCurrentPage, setRadio, setColorValues]
+    [setCurrentPage, setRadio, setColorValues, setCardName]
   );
 
   useEffect(() => {
@@ -57,9 +66,10 @@ export const CardsList: React.FC = () => {
         colors: `${queryColor}`,
         pageSize: cardPerPage,
         page: currentPage,
+        name: cardName,
       },
     });
-  }, [colorValues, radio, currentPage, fetchData]);
+  }, [colorValues, radio, currentPage, fetchData, cardName]);
 
   const onModalClose = useCallback(() => {
     setDialogIsOpen(false);
@@ -72,6 +82,11 @@ export const CardsList: React.FC = () => {
     },
     [setDialogIsOpen, setCardDetails]
   );
+  const totalPages = useMemo(() => {
+    return headers?.["total-count"]
+      ? Math.ceil(headers?.["total-count"] / 12)
+      : 0;
+  }, [headers]);
   return (
     <section className={classes.wrapper}>
       <CardsFilter
@@ -80,6 +95,7 @@ export const CardsList: React.FC = () => {
         isFetching={isFetching}
         colorValues={colorValues}
         radio={radio}
+        cardName={cardName}
       />
       {isFetching ? (
         <CardsListSkeleton />
@@ -97,7 +113,7 @@ export const CardsList: React.FC = () => {
       <Pagination
         page={currentPage}
         disabled={isFetching}
-        count={headers?.["total-count"]}
+        count={totalPages}
         color="primary"
         onChange={handlePaginationChange}
       />
